@@ -17,6 +17,10 @@
 
 package zcore
 
+import (
+	"plugin"
+)
+
 const (
 	ExecSuffix       = "zz"
 	ExecName         = "go" + ExecSuffix
@@ -63,4 +67,24 @@ func (entity PluginEntity) run(filename string) (err error) {
 		return
 	}
 	return entity.Plugin.Run(decls.Parse(entity, entity.Options))
+}
+
+func LoadExtension(name string) (err error) {
+	p, err := plugin.Open(name)
+	if err != nil {
+		return
+	}
+	// lookup symbol
+	symbol, err := p.Lookup("Z")
+	if err != nil {
+		return
+	}
+	// register symbol type
+	switch v := symbol.(type) {
+	case Plugin:
+		RegisterPlugin(v)
+	case SchemaDriver:
+		RegisterSchemaDriver(v)
+	}
+	return
 }
