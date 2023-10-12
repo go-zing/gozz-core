@@ -83,8 +83,8 @@ func LoadExtension(name string) (err error) {
 	switch v := symbol.(type) {
 	case Plugin:
 		RegisterPlugin(v)
-	case SchemaDriver:
-		RegisterSchemaDriver(v)
+	case OrmSchemaDriver:
+		RegisterOrmSchemaDriver(v)
 	}
 	return
 }

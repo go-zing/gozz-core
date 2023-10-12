@@ -22,14 +22,14 @@ import (
 	"sort"
 )
 
-var schemaDriverRegistry = make(map[string]SchemaDriver)
+var ormSchemaDriverRegistry = make(map[string]OrmSchemaDriver)
 
-func RegisterSchemaDriver(driver SchemaDriver) { schemaDriverRegistry[driver.Name()] = driver }
+func RegisterOrmSchemaDriver(driver OrmSchemaDriver) { ormSchemaDriverRegistry[driver.Name()] = driver }
 
-func GetSchemaDriver(name string) SchemaDriver { return schemaDriverRegistry[name] }
+func GetOrmSchemaDriver(name string) OrmSchemaDriver { return ormSchemaDriverRegistry[name] }
 
-func GetSchemaDrivers() (names []string) {
-	for name := range schemaDriverRegistry {
+func GetOrmSchemaDrivers() (names []string) {
+	for name := range ormSchemaDriverRegistry {
 		names = append(names, name)
 	}
 	sort.Strings(names)
@@ -37,7 +37,7 @@ func GetSchemaDrivers() (names []string) {
 }
 
 type (
-	SchemaDriver interface {
+	OrmSchemaDriver interface {
 		Name() string
 
 		Parse(dsn, schema, table string, types map[string]string) (tables []OrmTable, err error)
@@ -64,7 +64,7 @@ type (
 	}
 )
 
-func DefaultTypes() map[string]string {
+func OrmTypeMapping() map[string]string {
 	return map[string]string{
 		// int
 		"int":     "int",
@@ -110,15 +110,15 @@ func DefaultTypes() map[string]string {
 }
 
 type (
-	// Ranger provide range method for slice elements range and alloc
-	Ranger interface {
+	// Iterator provide range method for slice elements range and alloc
+	Iterator interface {
 		Range(f func(element interface{}, alloc bool) (next bool))
 	}
 
-	// FieldMapper return mapping of struct field and column name
+	// OrmFieldMapper return mapping of orm struct field and column name
 	// keys represents column names
 	// values represents pointers to struct field
-	FieldMapper interface {
+	OrmFieldMapper interface {
 		FieldMapping() map[string]interface{}
 	}
 
@@ -151,30 +151,18 @@ func (column *SqlColumn) FieldMapping() map[string]interface{} {
 	}
 }
 
-// FieldsOf extract fields from ranger slice with FieldMapper items
-func FieldsOf(ms Ranger) (fields []string) {
-	RangeFieldMapper(ms, func(m FieldMapper, b bool) bool {
-		for key := range m.FieldMapping() {
-			fields = append(fields, key)
-		}
-		return false
-	})
-	sort.Strings(fields)
-	return
+// IterateOrmFieldMapper range slice and apply function receive OrmFieldMapper
+func IterateOrmFieldMapper(ms Iterator, f func(m OrmFieldMapper, b bool) bool) {
+	ms.Range(func(v interface{}, b bool) bool { m, ok := v.(OrmFieldMapper); return ok && f(m, b) })
 }
 
-// RangeFieldMapper range slice and apply function receive FieldMapper
-func RangeFieldMapper(ms Ranger, f func(m FieldMapper, b bool) bool) {
-	ms.Range(func(v interface{}, b bool) bool { m, ok := v.(FieldMapper); return ok && f(m, b) })
-}
-
-// Scan range mapper slice and scan sql.Rows values into ranger elements
-func Scan(rows *sql.Rows, fields []string, ms Ranger) (err error) {
+// ScanSqlRows scan iterator slice and scan sql.Rows values into iterated OrmFieldMapper elements
+func ScanSqlRows(rows *sql.Rows, fields []string, iterator Iterator) (err error) {
 	if !rows.Next() {
 		return
 	}
 	values := make([]interface{}, len(fields))
-	RangeFieldMapper(ms, func(m FieldMapper, b bool) bool {
+	IterateOrmFieldMapper(iterator, func(m OrmFieldMapper, b bool) bool {
 		mapping := m.FieldMapping()
 		for i, field := range fields {
 			values[i] = mapping[field]
