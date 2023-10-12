@@ -26,8 +26,6 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
-
-	"github.com/stoewer/go-strcase"
 )
 
 var (
@@ -36,9 +34,9 @@ var (
 		"title":   strings.Title,
 		"lower":   strings.ToLower,
 		"upper":   strings.ToUpper,
-		"snake":   strcase.SnakeCase,
-		"camel":   strcase.LowerCamelCase,
-		"kebab":   strcase.KebabCase,
+		"snake":   SnakeCase,
+		"camel":   LowerCamelCase,
+		"kebab":   KebabCase,
 		"comment": CommentLines,
 	}
 
