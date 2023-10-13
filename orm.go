@@ -19,27 +19,25 @@ package zcore
 
 import (
 	"database/sql"
-	"sort"
 )
 
+// ormSchemaDriverRegistry provides simple registry store for all registered driver with name
 var ormSchemaDriverRegistry = make(map[string]OrmSchemaDriver)
 
+// RegisterOrmSchemaDriver registers OrmSchemaDriver to ormSchemaDriverRegistry
 func RegisterOrmSchemaDriver(driver OrmSchemaDriver) { ormSchemaDriverRegistry[driver.Name()] = driver }
 
+// GetOrmSchemaDriver get OrmSchemaDriver from ormSchemaDriverRegistry by name
 func GetOrmSchemaDriver(name string) OrmSchemaDriver { return ormSchemaDriverRegistry[name] }
 
-func GetOrmSchemaDrivers() (names []string) {
-	for name := range ormSchemaDriverRegistry {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	return
-}
-
 type (
+	// OrmSchemaDriver represents interface to register as driver.
 	OrmSchemaDriver interface {
+
+		// Name represents driver's unique name to register
 		Name() string
 
+		// Parse load database schema from dns then parse schema into []OrmTable for generation
 		Parse(dsn, schema, table string, types map[string]string) (tables []OrmTable, err error)
 	}
 
@@ -64,6 +62,7 @@ type (
 	}
 )
 
+// OrmTypeMapping provides default type mapping from sql datatype and golang type
 func OrmTypeMapping() map[string]string {
 	return map[string]string{
 		// int

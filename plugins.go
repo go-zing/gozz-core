@@ -29,13 +29,36 @@ const (
 )
 
 type (
+	// Plugin represents interface to register as plugin and handles entities
+	// builtin Plugin would automate registered on process init.
+	// also here supports load external plugin extension from ".so" plugin.
+	// external plugin should provide symbol named "Z" and implements Plugin interface
 	Plugin interface {
+
+		// Name represents plugin's unique name to register and annotations prefix
 		Name() string
-		Args() ([]string, map[string]string)
+
+		// Args represents arguments and options of plugin to uses.
+		// plugin should implement Args to provide args and options description.
+		// these infos would be showed in command "list"
+		//
+		// additionally args count effects annotations parsing and options offsets from name prefix
+		// use ":" to split args name with description like "arg_name:arg_help"
+		//
+		// options provides optional control for plugins
+		// plugin can return extra key-value options to describe name-help.
+		Args() (args []string, options map[string]string)
+
+		// Description represents summary of plugin .
+		// these infos would be showed in command "list"
 		Description() string
+
+		// Run is entry of plugin make use of parsed entities from command "run".
+		// plugin can use entities parsed from provided name prefix to do awesome things
 		Run(entities DeclEntities) (err error)
 	}
 
+	// PluginEntity represents Plugin instance and extra options from execute command
 	PluginEntity struct {
 		Plugin
 		Options map[string]string
@@ -44,6 +67,7 @@ type (
 	PluginEntities []PluginEntity
 )
 
+// plugin provides simple registry store for all registered plugins with name
 var pluginRegistry = map[string]Plugin{}
 
 func PluginRegistry() map[string]Plugin { return pluginRegistry }
@@ -69,8 +93,10 @@ func (entity PluginEntity) run(filename string) (err error) {
 	return entity.Plugin.Run(decls.Parse(entity, entity.Options))
 }
 
-func LoadExtension(name string) (err error) {
-	p, err := plugin.Open(name)
+// LoadExtension load filename and lookup symbol named "Z"
+// symbol object should implement Plugin or OrmSchemaDriver
+func LoadExtension(filename string) (err error) {
+	p, err := plugin.Open(filename)
 	if err != nil {
 		return
 	}

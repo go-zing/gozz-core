@@ -31,8 +31,8 @@ func AssertFuncType(field *ast.Field) (name string, ft *ast.FuncType, ok bool) {
 	return
 }
 
-// StructFields extracts struct fields names
-func StructFields(typ *ast.StructType) (fields []string) {
+// ExtractStructFieldsNames extracts struct exported fields names
+func ExtractStructFieldsNames(typ *ast.StructType) (names []string) {
 	if typ.Fields == nil {
 		return
 	}
@@ -51,7 +51,7 @@ func StructFields(typ *ast.StructType) (fields []string) {
 
 	add := func(ident *ast.Ident) {
 		if ident != nil && ident.IsExported() {
-			fields = append(fields, ident.Name)
+			names = append(names, ident.Name)
 		}
 	}
 

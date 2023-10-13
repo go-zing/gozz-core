@@ -129,6 +129,7 @@ func WalkPackage(dir string, fn func(file *File) (err error)) (files map[string]
 	})
 }
 
+// WalkDir walks directory provide but does not walk subdirectory
 func WalkDir(dir string, fn func(filename string) error) (err error) {
 	return filepath.Walk(dir, func(filename string, info fs.FileInfo, err error) error {
 		if os.IsNotExist(err) {

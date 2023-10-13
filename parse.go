@@ -76,6 +76,88 @@ type (
 	AnnotatedDecls []*AnnotatedDecl
 )
 
+// Name return name from different decl
+func (decl *AnnotatedDecl) Name() string {
+	if decl.TypeSpec != nil && decl.TypeSpec.Name != nil {
+		return decl.TypeSpec.Name.Name
+	}
+	if decl.FuncDecl != nil && decl.FuncDecl.Name != nil {
+		return decl.FuncDecl.Name.Name
+	}
+	if decl.ValueSpec != nil && len(decl.ValueSpec.Names) == 1 {
+		return decl.ValueSpec.Names[0].Name
+	}
+	return ""
+}
+
+// RelFilename return relative format filename from decl info and mod file
+// if filename is absolute. filename would be related to mod file
+// else filename would be related to declaration file
+// if filename does not have ".go" suffix.
+// defaultName provided would be added as base name and origin filename as directory name
+func (decl *AnnotatedDecl) RelFilename(filename string, defaultName string) (ret string) {
+	if !strings.HasSuffix(filename, ".go") {
+		defaultName = strings.TrimSuffix(defaultName, ".go") + ".go"
+		filename = filepath.Join(filename, defaultName)
+	}
+
+	if dir := filepath.Dir(decl.File.Path); filepath.IsAbs(filename) {
+		ret = filepath.Join(filepath.Dir(GetModFile(dir)), filename)
+	} else {
+		ret = filepath.Join(dir, filename)
+	}
+
+	if strings.Contains(ret, "{{") && strings.Contains(ret, "}}") {
+		if str := (&strings.Builder{}); ExecuteTemplate(decl, ret, str) == nil {
+			ret = str.String()
+		}
+	}
+	return
+}
+
+// Parse parses declarations by plugin's name and args count. returns declaration entities with parsed args and options
+func (decls AnnotatedDecls) Parse(plugin Plugin, extOptions map[string]string) (entities DeclEntities) {
+	name := plugin.Name()
+	args, _ := plugin.Args()
+	for _, decl := range decls {
+		entities = append(entities, decl.parse(name, len(args), extOptions)...)
+	}
+	return
+}
+
+// parse analysis annotated declarations annotations matched with name and args count. and convert into args and options.
+func (decl *AnnotatedDecl) parse(name string, argsCount int, extOptions map[string]string) (entities DeclEntities) {
+	for _, annotation := range decl.Annotations {
+		args, opts, ok := parseAnnotation(annotation, name, argsCount, extOptions)
+		if !ok {
+			continue
+		}
+		entities = append(entities, DeclEntity{
+			AnnotatedDecl: decl,
+			Plugin:        name,
+			Args:          args,
+			Options:       opts,
+		})
+	}
+	return
+}
+
+// Parse analysis annotated fields annotations matched with name and args count. and convert into args and options.
+func (field *AnnotatedField) Parse(name string, argsCount int, extOptions map[string]string) (entities FieldEntities) {
+	for _, annotation := range field.Annotations {
+		args, opts, ok := parseAnnotation(annotation, name, argsCount, extOptions)
+		if !ok {
+			continue
+		}
+		entities = append(entities, FieldEntity{
+			AnnotatedField: field,
+			Args:           args,
+			Options:        opts,
+		})
+	}
+	return
+}
+
 // ParseFileOrDirectory try parse provided path annotated declarations with annotations prefix
 // if directory provided. walks file tree from provided path as root and returns all parsed
 func ParseFileOrDirectory(path string, prefix string) (decls AnnotatedDecls, err error) {
