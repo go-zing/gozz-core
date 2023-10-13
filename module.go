@@ -154,9 +154,12 @@ func FixPackage(name, srcImportPath, dstImportPath string, srcImports, dstImport
 		}
 		return name
 	}
-	pkgImportPath := srcImports.Which(sp[0])
-	if pkgImportPath == dstImportPath {
+
+	if pkgImportPath := srcImports.Which(sp[0]); pkgImportPath == dstImportPath {
 		return sp[1]
+	} else if len(pkgImportPath) == 0 {
+		return name
+	} else {
+		return dstImports.Add(pkgImportPath) + "." + sp[1]
 	}
-	return dstImports.Add(pkgImportPath) + "." + sp[1]
 }
