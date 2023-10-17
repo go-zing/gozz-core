@@ -106,6 +106,10 @@ func getTemplate(text string) (tmpl *template.Template, err error) {
 
 // ExecuteTemplate parse provide text template and execute template data into writer
 func ExecuteTemplate(data interface{}, text string, writer io.Writer) (err error) {
+	if !(strings.Contains(text, "{{") && strings.Contains(text, "}}")) {
+		_, err = writer.Write(UnsafeString2Bytes(text))
+		return
+	}
 	tmpl, err := getTemplate(text)
 	if err != nil {
 		return
