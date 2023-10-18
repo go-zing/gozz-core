@@ -90,6 +90,9 @@ func (decl *AnnotatedDecl) Name() string {
 	return ""
 }
 
+// Package return package name from file ast
+func (decl *AnnotatedDecl) Package() string { return decl.File.Ast.Name.Name }
+
 // RelFilename return relative format filename from decl info and mod file
 // if filename is absolute. filename would be related to mod file
 // else filename would be related to declaration file
