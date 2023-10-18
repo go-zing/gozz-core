@@ -19,6 +19,7 @@ package zcore
 
 import (
 	"go/ast"
+	"path/filepath"
 )
 
 // AssertFuncType to assert interface fields as function type and try return name
@@ -67,5 +68,38 @@ func ExtractStructFieldsNames(typ *ast.StructType) (names []string) {
 			add(name)
 		}
 	}
+	return
+}
+
+// LookupTypSpec lookup typename in package src path.
+func LookupTypSpec(name, dir, pkgPath string) (expr ast.Expr, srcFile *File) {
+	if len(pkgPath) == 0 {
+		return
+	}
+
+	pkgDir, err := ExecCommand(`go list -f "{{ .Dir }} " `+pkgPath, dir)
+	if err != nil {
+		return
+	}
+
+	_, _ = WalkPackage(pkgDir, func(file *File) (err error) {
+		object := file.Lookup(name)
+		if object == nil || object.Decl == nil {
+			return
+		}
+
+		if spec, ok := object.Decl.(*ast.TypeSpec); ok {
+			switch typ := spec.Type.(type) {
+			case *ast.SelectorExpr:
+				expr, srcFile = LookupTypSpec(typ.Sel.Name, dir, file.Imports().Which(UnsafeBytes2String(file.Node(typ.X))))
+			case *ast.Ident:
+				expr, srcFile = LookupTypSpec(typ.Name, dir, pkgPath)
+			default:
+				expr, srcFile = typ, file
+			}
+		}
+
+		return filepath.SkipDir
+	})
 	return
 }
