@@ -37,6 +37,9 @@ type (
 		// Name represents driver's unique name to register
 		Name() string
 
+		// Dsn format database localhost install default dns with provided password
+		Dsn(password string) (dsn string)
+
 		// Parse load database schema from dns then parse schema into []OrmTable for generation
 		Parse(dsn, schema, table string, types map[string]string) (tables []OrmTable, err error)
 	}
