@@ -88,12 +88,17 @@ func (opt Options) Exist(key string) bool {
 //   options     [key1:value1 key2:value2 key3:value3 key4:value4]
 //   ok          true
 func parseAnnotation(annotation, name string, argsCount int, extOptions map[string]string) (args []string, options map[string]string, ok bool) {
-	sp := strings.Split(annotation, ":")
+	sp := strings.Split(EscapeAnnotation(annotation), ":")
 	if sp[0] != name || len(sp)-1 < argsCount {
 		return
 	}
 	options = make(map[string]string)
 	SplitKVSlice2Map(sp[1+argsCount:], "=", options)
+
+	for k, v := range options {
+		options[k] = UnescapeAnnotation(v)
+	}
+
 	for k, v := range extOptions {
 		if _, exist := options[k]; exist {
 			continue
@@ -101,6 +106,14 @@ func parseAnnotation(annotation, name string, argsCount int, extOptions map[stri
 		options[k] = v
 	}
 	return sp[1 : 1+argsCount], options, true
+}
+
+func EscapeAnnotation(str string) string {
+	return strings.Replace(str, "\\:", "\\u003A", -1)
+}
+
+func UnescapeAnnotation(str string) string {
+	return strings.Replace(str, "\\u003A", ":", -1)
 }
 
 // GroupByDir groups entities into string map by declaration file dir
