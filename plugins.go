@@ -95,7 +95,7 @@ func (entity PluginEntity) run(filename string) (err error) {
 
 // LoadExtension load filename and lookup symbol named "Z"
 // symbol object should implement Plugin or OrmSchemaDriver
-func LoadExtension(filename string) (err error) {
+func LoadExtension(filename string) (name string, err error) {
 	p, err := plugin.Open(filename)
 	if err != nil {
 		return
@@ -108,8 +108,10 @@ func LoadExtension(filename string) (err error) {
 	// register symbol type
 	switch v := symbol.(type) {
 	case Plugin:
+		name = v.Name()
 		RegisterPlugin(v)
 	case OrmSchemaDriver:
+		name = "orm-" + v.Name()
 		RegisterOrmSchemaDriver(v)
 	}
 	return
