@@ -147,19 +147,25 @@ func executeWithDir(filename string, command string) (ret, dir string) {
 
 // FixPackage modify or add selector package to provide name according to src and dst import module info
 func FixPackage(name, srcImportPath, dstImportPath string, srcImports, dstImports Imports) string {
+	name, ok := TrimPrefix(name, "*")
+	ptr := ""
+	if ok {
+		ptr = "*"
+	}
+
 	sp := strings.Split(name, ".")
 	if len(sp) == 1 {
 		if srcImportPath != dstImportPath {
-			return dstImports.Add(srcImportPath) + "." + name
+			return ptr + dstImports.Add(srcImportPath) + "." + name
 		}
-		return name
+		return ptr + name
 	}
 
 	if pkgImportPath := srcImports.Which(sp[0]); pkgImportPath == dstImportPath {
-		return sp[1]
+		return ptr + sp[1]
 	} else if len(pkgImportPath) == 0 {
-		return name
+		return ptr + name
 	} else {
-		return dstImports.Add(pkgImportPath) + "." + sp[1]
+		return ptr + dstImports.Add(pkgImportPath) + "." + sp[1]
 	}
 }
