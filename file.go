@@ -138,6 +138,8 @@ func WalkDir(dir string, fn func(filename string) error) (err error) {
 			return err
 		} else if info.IsDir() && filename != dir {
 			return filepath.SkipDir
+		} else if strings.HasPrefix(info.Name(), ".") {
+			return nil
 		}
 		return fn(filename)
 	})
