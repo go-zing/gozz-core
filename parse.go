@@ -186,10 +186,9 @@ func ParseFileOrDirectory(path string, prefix string) (decls AnnotatedDecls, err
 			return e
 		}
 
-		if info.IsDir() {
-			name := info.Name()
+		if name := info.Name(); info.IsDir() || strings.HasPrefix(name, ".") {
 			// some specific skip name or dirs starts with .
-			if _, skip := SkipDirs[name]; skip || strings.HasPrefix(name, ".") {
+			if _, skip := SkipDirs[name]; skip {
 				return filepath.SkipDir
 			}
 			return
