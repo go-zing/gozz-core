@@ -49,6 +49,12 @@ type (
 	Options map[string]string
 )
 
+const (
+	AnnotationSeparator       = ":"
+	EscapeAnnotationSeparator = `\u003A`
+	KeyValueSeparator         = "="
+)
+
 // Get option value by key from Options map. if empty return default value from def
 func (opt Options) Get(key string, def string) string {
 	if v, ok := opt[key]; ok && len(v) > 0 {
@@ -88,12 +94,12 @@ func (opt Options) Exist(key string) bool {
 //   options     [key1:value1 key2:value2 key3:value3 key4:value4]
 //   ok          true
 func parseAnnotation(annotation, name string, argsCount int, extOptions map[string]string) (args []string, options map[string]string, ok bool) {
-	sp := strings.Split(EscapeAnnotation(annotation), ":")
+	sp := strings.Split(EscapeAnnotation(annotation), AnnotationSeparator)
 	if sp[0] != name || len(sp)-1 < argsCount {
 		return
 	}
 	options = make(map[string]string)
-	SplitKVSlice2Map(sp[1+argsCount:], "=", options)
+	SplitKVSlice2Map(sp[1+argsCount:], KeyValueSeparator, options)
 
 	for k, v := range options {
 		options[k] = UnescapeAnnotation(v)
@@ -109,11 +115,11 @@ func parseAnnotation(annotation, name string, argsCount int, extOptions map[stri
 }
 
 func EscapeAnnotation(str string) string {
-	return strings.Replace(str, "\\:", "\\u003A", -1)
+	return strings.Replace(str, `\:`, EscapeAnnotationSeparator, -1)
 }
 
 func UnescapeAnnotation(str string) string {
-	return strings.Replace(str, "\\u003A", ":", -1)
+	return strings.Replace(str, EscapeAnnotationSeparator, AnnotationSeparator, -1)
 }
 
 // GroupByDir groups entities into string map by declaration file dir
