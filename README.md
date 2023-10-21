@@ -1,21 +1,34 @@
 <p align="center">
-  <a href="https://github.com/go-zing/gozz" target="_blank">
-    <img src="https://raw.githubusercontent.com/go-zing/gozz-doc/main/docs/.vuepress/public/logo.png" alt="logo">
-  </a>
+    <img width="200" src="https://raw.githubusercontent.com/go-zing/gozz-doc/main/docs/.vuepress/public/logo.png" alt="logo">
 </p>
 
-## Introduction
+<div align=center>
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/go-zing/gozz-core)](https://goreportcard.com/report/github.com/go-zing/gozz-core)
+[![Go Reference](https://pkg.go.dev/badge/github.com/go-zing/gozz-core.svg)](https://pkg.go.dev/github.com/go-zing/gozz-core)
+
+[![License: MIT](https://img.shields.io/github/license/go-zing/gozz-core)](https://github.com/go-zing/gozz-core/blob/master/LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/go-zing/gozz-core)](https://github.com/go-zing/gozz-core/commits)
+[![codecov](https://codecov.io/gh/go-zing/gozz-core/branch/main/graph/badge.svg)](https://codecov.io/gh/go-zing/gozz-core)
+
+</div>
+
+## Documentation
 
 [English](https://go-zing.github.io/gozz) | [简体中文](https://go-zing.github.io/gozz/zh)
+
+## Introduction
 
 gozz-core provides core packages separated from [gozz](https://github.com/go-zing/gozz).
 contains core typing and code-generate utils for better independent plugin package referenced.
 
-## Showcase
+### Why they independent
 
-- [Gozz](https://github.com/go-zing/gozz)
-- [Gozz-Doc](https://github.com/go-zing/gozz-doc)
-- [Gozz-Doc-Examples](https://github.com/go-zing/gozz-doc-examples)
+In [Golang plugin](https://pkg.go.dev/plugin),
+module with same name loaded should be compiled in same version.
+
+So we have great reason to reduce core dependencies of `gozz` in `go.mod` then
+provide greater independence.
 
 ## License
 
