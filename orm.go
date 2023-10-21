@@ -114,7 +114,7 @@ func OrmTypeMapping() map[string]string {
 type (
 	// Iterator provide range method for slice elements range and alloc
 	Iterator interface {
-		Range(f func(element interface{}, alloc bool) (next bool))
+		Iterate(f func(element interface{}, alloc bool) (next bool))
 	}
 
 	// OrmFieldMapper assign mapping of orm struct field and column name
@@ -126,8 +126,8 @@ type (
 )
 
 // IterateOrmFieldMapper range slice and apply function receive OrmFieldMapper
-func IterateOrmFieldMapper(ms Iterator, f func(m OrmFieldMapper, b bool) bool) {
-	ms.Range(func(v interface{}, b bool) bool { m, ok := v.(OrmFieldMapper); return ok && f(m, b) })
+func IterateOrmFieldMapper(i Iterator, f func(m OrmFieldMapper, b bool) bool) {
+	i.Iterate(func(v interface{}, b bool) bool { m, ok := v.(OrmFieldMapper); return ok && f(m, b) })
 }
 
 // ScanSqlRows scan iterator slice and scan sql.Rows values into iterated OrmFieldMapper elements
