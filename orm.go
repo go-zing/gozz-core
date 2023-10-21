@@ -117,41 +117,13 @@ type (
 		Range(f func(element interface{}, alloc bool) (next bool))
 	}
 
-	// OrmFieldMapper return mapping of orm struct field and column name
+	// OrmFieldMapper assign mapping of orm struct field and column name
 	// keys represents column names
 	// values represents pointers to struct field
 	OrmFieldMapper interface {
-		FieldMapping() map[string]interface{}
-	}
-
-	SqlColumn struct {
-		TableSchema            string
-		TableName              string
-		ColumnName             string
-		OrdinalPosition        int
-		IsNullable             string
-		DataType               string
-		CharacterSetName       *string
-		CollationName          *string
-		NumericPrecision       *int64
-		CharacterMaximumLength *int64
+		FieldMapping(map[string]interface{})
 	}
 )
-
-func (column *SqlColumn) FieldMapping() map[string]interface{} {
-	return map[string]interface{}{
-		"table_schema":             &column.TableSchema,
-		"table_name":               &column.TableName,
-		"column_name":              &column.ColumnName,
-		"ordinal_position":         &column.OrdinalPosition,
-		"is_nullable":              &column.IsNullable,
-		"data_type":                &column.DataType,
-		"character_set_Name":       &column.CharacterSetName,
-		"collation_name":           &column.CollationName,
-		"numeric_precision":        &column.NumericPrecision,
-		"character_maximum_length": &column.CharacterMaximumLength,
-	}
-}
 
 // IterateOrmFieldMapper range slice and apply function receive OrmFieldMapper
 func IterateOrmFieldMapper(ms Iterator, f func(m OrmFieldMapper, b bool) bool) {
@@ -164,8 +136,9 @@ func ScanSqlRows(rows *sql.Rows, fields []string, iterator Iterator) (err error)
 		return
 	}
 	values := make([]interface{}, len(fields))
+	mapping := make(map[string]interface{}, len(fields))
 	IterateOrmFieldMapper(iterator, func(m OrmFieldMapper, b bool) bool {
-		mapping := m.FieldMapping()
+		m.FieldMapping(mapping)
 		for i, field := range fields {
 			values[i] = mapping[field]
 		}
