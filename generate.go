@@ -117,6 +117,14 @@ func ExecuteTemplate(data interface{}, text string, writer io.Writer) (err error
 	return tmpl.Execute(writer, data)
 }
 
+// TryExecuteTemplate try execute template, if success replace value to string pointer
+func TryExecuteTemplate(data interface{}, text string, dst *string) {
+	str := &strings.Builder{}
+	if ExecuteTemplate(data, text, str) == nil {
+		*dst = str.String()
+	}
+}
+
 // RenderWrite render golang file template and write into filename
 func RenderWrite(plugin Plugin, templateText, filename, pkg string, editable bool, ext ...string) (err error) {
 	data, err := RenderTemplate(plugin, templateText, pkg, editable, ext...)

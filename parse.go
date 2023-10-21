@@ -111,9 +111,7 @@ func (decl *AnnotatedDecl) RelFilename(filename string, defaultName string) (ret
 	}
 
 	if strings.Contains(ret, "{{") && strings.Contains(ret, "}}") {
-		if str := (&strings.Builder{}); ExecuteTemplate(decl, ret, str) == nil {
-			ret = str.String()
-		}
+		TryExecuteTemplate(decl, ret, &ret)
 	}
 	return
 }
