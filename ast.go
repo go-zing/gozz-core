@@ -32,21 +32,21 @@ func AssertFuncType(field *ast.Field) (name string, ft *ast.FuncType, ok bool) {
 	return
 }
 
+func ExtractAnonymousName(spec ast.Expr) (name *ast.Ident) {
+	switch t := spec.(type) {
+	case *ast.StarExpr:
+		name, _ = t.X.(*ast.Ident)
+	case *ast.SelectorExpr:
+		name, _ = t.X.(*ast.Ident)
+	case *ast.Ident:
+		name = t
+	}
+	return
+}
+
 // ExtractStructFieldsNames extracts struct exported fields names
 func ExtractStructFieldsNames(typ *ast.StructType) (names []string) {
 	if typ.Fields == nil {
-		return
-	}
-
-	anonymous := func(spec ast.Expr) (name *ast.Ident) {
-		switch t := spec.(type) {
-		case *ast.StarExpr:
-			name, _ = t.X.(*ast.Ident)
-		case *ast.SelectorExpr:
-			name, _ = t.X.(*ast.Ident)
-		case *ast.Ident:
-			name = t
-		}
 		return
 	}
 
@@ -59,7 +59,7 @@ func ExtractStructFieldsNames(typ *ast.StructType) (names []string) {
 	for _, field := range typ.Fields.List {
 		// anonymous field
 		if len(field.Names) == 0 {
-			add(anonymous(field.Type))
+			add(ExtractAnonymousName(field.Type))
 			continue
 		}
 
