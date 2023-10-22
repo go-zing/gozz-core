@@ -26,6 +26,7 @@ import (
 	"go/token"
 	"os"
 	"path"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -84,7 +85,7 @@ func (f *File) nodeReplacer(node ast.Node) bytesReplacer {
 
 // Imports dumps file ast imports list and return Imports map
 func (f *File) Imports() Imports {
-	return LoadImports(f.Ast)
+	return LoadImports(f.Ast, filepath.Dir(f.Path))
 }
 
 // ReplacePackages try replaces type package selector to provide node according to dst filename
@@ -95,7 +96,7 @@ func (f *File) ReplacePackages(node ast.Node, dstFilename string, dstImports Imp
 	}
 	pr := &packagesReplacer{
 		bytesReplacer: f.nodeReplacer(node),
-		srcImports:    LoadImports(f.Ast),
+		srcImports:    f.Imports(),
 		dstImports:    dstImports,
 		srcImportPath: GetImportPath(f.Path),
 		dstImportPath: GetImportPath(dstFilename),
@@ -155,7 +156,7 @@ func (pr *packagesReplacer) Visit(node ast.Node) (w ast.Visitor) {
 }
 
 // LoadImports parse *ast.File import spec list as Imports map
-func LoadImports(f *ast.File) (imps Imports) {
+func LoadImports(f *ast.File, dir string) (imps Imports) {
 	imps = make(Imports, len(f.Imports))
 	for _, imp := range f.Imports {
 		name := ""
@@ -176,7 +177,7 @@ func LoadImports(f *ast.File) (imps Imports) {
 		if len(name) == 0 {
 			if IsStandardImportPath(p) {
 				name = path.Base(p)
-			} else if name = GetImportName(p); len(name) == 0 {
+			} else if name, _ = ExecCommand(`go list -f "{{ .Name }} "`+p, dir); len(name) == 0 {
 				// no import name specified
 				// default import name from GetImportName
 				// or use base path
@@ -287,7 +288,7 @@ func (m *Modify) applyImports(data []byte) (ret []byte, err error) {
 	}
 
 	// parse exists import spec list
-	exists := LoadImports(fileAst)
+	exists := LoadImports(fileAst, filepath.Dir(m.Filename))
 
 	for _, imp := range m.Imports.List() {
 		if _, exist := exists[imp.Path]; exist {
