@@ -177,7 +177,7 @@ func LoadImports(f *ast.File, dir string) (imps Imports) {
 		if len(name) == 0 {
 			if IsStandardImportPath(p) {
 				name = path.Base(p)
-			} else if name, _ = ExecCommand(`go list -f "{{ .Name }}"`+p, dir); len(name) == 0 {
+			} else if name, _ = ExecCommand(`go list -f "{{ .Name }}" `+p, dir); len(name) == 0 {
 				// no import name specified
 				// default import name from go list -f
 				// or use base path
