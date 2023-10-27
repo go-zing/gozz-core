@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -113,7 +114,7 @@ func GetImportPath(filename string) string {
 
 		// get nearest module path
 		modDir := filepath.Dir(GetModFile(tmp))
-		modName, err := ExecCommand("go list -m", modDir)
+		modName, err := ExecCommand("go list -m", strconv.Quote(modDir))
 		if err != nil {
 			return
 		}
@@ -142,7 +143,7 @@ func executeWithDir(filename string, command string) (ret, dir string) {
 		dir = filepath.Dir(filename)
 	}
 
-	ret, _ = ExecCommand(command+" "+dir, dir)
+	ret, _ = ExecCommand(command+" "+strconv.Quote(dir), dir)
 	return
 }
 
