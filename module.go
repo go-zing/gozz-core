@@ -20,6 +20,7 @@ package zcore
 import (
 	"bytes"
 	"fmt"
+	"go/token"
 	"os"
 	"os/exec"
 	"path"
@@ -155,7 +156,7 @@ func FixPackage(name, srcImportPath, dstImportPath string, srcImports, dstImport
 
 	sp := strings.Split(name, ".")
 	if len(sp) == 1 {
-		if srcImportPath != dstImportPath {
+		if token.IsExported(name) && srcImportPath != dstImportPath {
 			return ptr + dstImports.Add(srcImportPath) + "." + name
 		}
 		return ptr + name
