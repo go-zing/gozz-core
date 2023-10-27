@@ -29,7 +29,7 @@ var (
 )
 
 func TestGetImportPath(t *testing.T) {
-	t.Log(executeWithDir("", "go list -m"))
+	t.Log(executeWithDir("", `go list -f "{{ .ImportPath }}"`))
 	t.Log(ExecCommand(`go list -f "{{ .ImportPath }}"`, ""))
 
 	if ret := GetImportPath(testRel); ret != filepath.Join(pkg, testRel) {
