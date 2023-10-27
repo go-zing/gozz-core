@@ -90,6 +90,9 @@ func (decl *AnnotatedDecl) Name() string {
 	return ""
 }
 
+// Filename return base filename from file ast
+func (decl *AnnotatedDecl) Filename() string { return filepath.Base(decl.File.Path) }
+
 // Package return package name from file ast
 func (decl *AnnotatedDecl) Package() string { return decl.File.Ast.Name.Name }
 
@@ -99,6 +102,10 @@ func (decl *AnnotatedDecl) Package() string { return decl.File.Ast.Name.Name }
 // if filename does not have ".go" suffix.
 // defaultName provided would be added as base name and origin filename as directory name
 func (decl *AnnotatedDecl) RelFilename(filename string, defaultName string) (ret string) {
+	if strings.Contains(filename, "{{") && strings.Contains(filename, "}}") {
+		TryExecuteTemplate(decl, filename, &filename)
+	}
+
 	if !strings.HasSuffix(filename, ".go") {
 		defaultName = strings.TrimSuffix(defaultName, ".go") + ".go"
 		filename = filepath.Join(filename, defaultName)
@@ -108,10 +115,6 @@ func (decl *AnnotatedDecl) RelFilename(filename string, defaultName string) (ret
 		ret = filepath.Join(filepath.Dir(GetModFile(dir)), filename)
 	} else {
 		ret = filepath.Join(dir, filename)
-	}
-
-	if strings.Contains(ret, "{{") && strings.Contains(ret, "}}") {
-		TryExecuteTemplate(decl, ret, &ret)
 	}
 	return
 }
@@ -432,7 +435,7 @@ func (decl *AnnotatedDecl) parseAnnotatedFields(fl *ast.FieldList, prefix string
 //
 // Example:
 //
-// +zz:annotation:args:key=value
+// // +zz:annotation:args:key=value
 // func Foo() {
 // }
 func ParseFuncDecl(decl *ast.FuncDecl, prefix string) (d *AnnotatedDecl) {
