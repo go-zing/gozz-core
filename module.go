@@ -49,7 +49,7 @@ func loadWithStore(key string, m *sync.Map, fn func() string) (r string) {
 // ExecCommand execute command in provide directory and get stdout,stderr as string,error
 func ExecCommand(command, dir string) (output string, err error) {
 	stderr := &bytes.Buffer{}
-	cmd := exec.Command("/bin/sh", "-c", command)
+	cmd := exec.Command("sh", "-c", command)
 	cmd.Dir = dir
 	cmd.Stderr = stderr
 	r, err := cmd.Output()
