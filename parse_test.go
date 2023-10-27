@@ -64,7 +64,7 @@ func TestParse(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer os.Remove("test.go")
-	decls, err := ParseFileOrDirectory("./", AnnotationPrefix)
+	decls, err := ParseFileOrDirectory(".", AnnotationPrefix)
 	if err != nil {
 		t.Fatal(err)
 	}

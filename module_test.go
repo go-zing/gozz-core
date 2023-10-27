@@ -23,12 +23,14 @@ import (
 	"testing"
 )
 
-var pkg = reflect.TypeOf(File{}).PkgPath()
+var (
+	pkg     = reflect.TypeOf(File{}).PkgPath()
+	testRel = filepath.Join(".", "test", "xxx")
+)
 
 func TestGetImportPath(t *testing.T) {
-	rel := "./test/xxx"
-	ret := GetImportPath(rel)
-	if ret != filepath.Join(pkg, rel) {
+	ret := GetImportPath(testRel)
+	if ret != filepath.Join(pkg, testRel) {
 		t.Fatal(ret)
 	}
 	if GetImportPath(".") != pkg {
@@ -37,8 +39,7 @@ func TestGetImportPath(t *testing.T) {
 }
 
 func TestGetImportName(t *testing.T) {
-	rel := "./test/xxx"
-	ret := GetImportName(rel)
+	ret := GetImportName(testRel)
 	if ret != "xxx" {
 		t.Fatal(ret)
 	}

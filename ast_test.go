@@ -42,7 +42,7 @@ func TestExtractStructFieldsNames(t *testing.T) {
 }
 
 func TestLookupTypSpec(t *testing.T) {
-	exp, f := LookupTypSpec(reflect.TypeOf(File{}).Name(), "./", pkg)
+	exp, f := LookupTypSpec(reflect.TypeOf(File{}).Name(), ".", pkg)
 	if f == nil {
 		t.Fatal("not found")
 	}
