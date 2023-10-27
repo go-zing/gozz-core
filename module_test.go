@@ -29,11 +29,10 @@ var (
 )
 
 func TestGetImportPath(t *testing.T) {
-	ret := GetImportPath(testRel)
-	if ret != filepath.Join(pkg, testRel) {
+	if ret := GetImportPath(testRel); ret != filepath.Join(pkg, testRel) {
 		t.Fatal(ret)
 	}
-	if GetImportPath(".") != pkg {
+	if ret := GetImportPath("."); ret != pkg {
 		t.Fatal(ret)
 	}
 }
