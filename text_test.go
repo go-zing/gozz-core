@@ -34,3 +34,31 @@ func TestSplitKV(t *testing.T) {
 		}
 	}
 }
+
+func TestTrimPrefix(t *testing.T) {
+	if v, ok := TrimPrefix("d0", "d"); !ok || v != "0" {
+		t.Fatal(v, ok)
+	}
+	if v, ok := TrimPrefix("d", "d"); !ok || v != "" {
+		t.Fatal(v, ok)
+	}
+	if v, ok := TrimPrefix("x0", "d"); ok || v != "x0" {
+		t.Fatal(v, ok)
+	}
+}
+
+func TestKeySet(t *testing.T) {
+	ks := KeySet{}
+	ks.Add([]string{"b", "a", "c", "a"})
+	if v := ks.Keys(); len(v) != 3 || v[0] != "a" || v[1] != "b" || v[2] != "c" {
+		t.Fatal(v)
+	}
+}
+
+func TestSplitKVSlice2Map(t *testing.T) {
+	m := make(map[string]string)
+	SplitKVSlice2Map([]string{"k1=v1", "k1=v2", "k2=v2", "k3=v2", ""}, "=", m)
+	if len(m) != 3 || m["k1"] != "v1,v2" || m["k2"] != "v2" || m["k3"] != "v2" {
+		t.Fatal(m)
+	}
+}

@@ -35,9 +35,9 @@ func AssertFuncType(field *ast.Field) (name string, ft *ast.FuncType, ok bool) {
 func ExtractAnonymousName(spec ast.Expr) (name *ast.Ident) {
 	switch t := spec.(type) {
 	case *ast.StarExpr:
-		name, _ = t.X.(*ast.Ident)
+		return ExtractAnonymousName(t.X)
 	case *ast.SelectorExpr:
-		name, _ = t.X.(*ast.Ident)
+		name = t.Sel
 	case *ast.Ident:
 		name = t
 	}
