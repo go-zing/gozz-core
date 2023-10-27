@@ -114,7 +114,7 @@ func GetImportPath(filename string) string {
 
 		// get nearest module path
 		modDir := filepath.Dir(GetModFile(tmp))
-		modName, err := ExecCommand("go list -m", strconv.Quote(modDir))
+		modName, err := ExecCommand("go list -m", modDir)
 		if err != nil {
 			return
 		}
