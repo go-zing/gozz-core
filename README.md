@@ -4,6 +4,7 @@
 
 <div align=center>
 
+[![Go](https://github.com/go-zing/gozz-core/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/go-zing/gozz-core/actions/workflows/ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/go-zing/gozz-core)](https://goreportcard.com/report/github.com/go-zing/gozz-core)
 [![Go Reference](https://pkg.go.dev/badge/github.com/go-zing/gozz-core.svg)](https://pkg.go.dev/github.com/go-zing/gozz-core)
 
