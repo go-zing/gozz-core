@@ -25,14 +25,17 @@ import (
 
 var (
 	pkg     = reflect.TypeOf(File{}).PkgPath()
-	testRel = filepath.Join(".", "test", "xxx")
+	testRel = filepath.Join("", "test", "xxx")
 )
 
 func TestGetImportPath(t *testing.T) {
+	t.Log(executeWithDir("", "go list -m"))
+	t.Log(ExecCommand(`go list -f "{{ .ImportPath }}"`, ""))
+
 	if ret := GetImportPath(testRel); ret != filepath.Join(pkg, testRel) {
 		t.Fatal(ret)
 	}
-	if ret := GetImportPath("."); ret != pkg {
+	if ret := GetImportPath(""); ret != pkg {
 		t.Fatal(ret)
 	}
 }
