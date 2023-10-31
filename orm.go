@@ -138,12 +138,15 @@ func ScanSqlRows(rows *sql.Rows, fields []string, iterator Iterator) (err error)
 	values := make([]interface{}, len(fields))
 	mapping := make(map[string]interface{}, len(fields))
 	IterateOrmFieldMapper(iterator, func(m OrmFieldMapper, b bool) bool {
+		if !rows.Next() {
+			return false
+		}
 		m.FieldMapping(mapping)
 		for i, field := range fields {
 			values[i] = mapping[field]
 		}
 		err = rows.Scan(values...)
-		return err == nil && rows.Next()
+		return err == nil
 	})
 	return
 }
