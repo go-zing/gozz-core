@@ -132,9 +132,6 @@ func IterateOrmFieldMapper(i Iterator, f func(m OrmFieldMapper, b bool) bool) {
 
 // ScanSqlRows scan iterator slice and scan sql.Rows values into iterated OrmFieldMapper elements
 func ScanSqlRows(rows *sql.Rows, fields []string, iterator Iterator) (err error) {
-	if !rows.Next() {
-		return
-	}
 	values := make([]interface{}, len(fields))
 	mapping := make(map[string]interface{}, len(fields))
 	IterateOrmFieldMapper(iterator, func(m OrmFieldMapper, b bool) bool {
