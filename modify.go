@@ -41,6 +41,9 @@ type (
 		Path string
 		Data []byte
 		Ast  *ast.File
+
+		mu      sync.Mutex
+		imports Imports
 	}
 
 	// ModifySet store inited *Modify with filename as key
@@ -85,11 +88,20 @@ func (f *File) nodeReplacer(node ast.Node) bytesReplacer {
 
 // Imports dumps file ast imports list and return Imports map
 func (f *File) Imports() Imports {
-	dir := filepath.Dir(f.Path)
-	if modDir := filepath.Dir(GetModFile(dir)); len(modDir) > 0 {
-		dir = modDir
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.imports == nil {
+		dir := filepath.Dir(f.Path)
+		if modDir := filepath.Dir(GetModFile(dir)); len(modDir) > 0 {
+			dir = modDir
+		}
+		f.imports = LoadImports(f.Ast, dir)
 	}
-	return LoadImports(f.Ast, dir)
+	imports := make(Imports, len(f.imports))
+	for k, v := range f.imports {
+		imports[k] = v
+	}
+	return imports
 }
 
 // ReplacePackages try replaces type package selector to provide node according to dst filename
