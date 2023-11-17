@@ -180,16 +180,15 @@ func ParseFileOrDirectory(path string, prefix string) (decls AnnotatedDecls, err
 
 	// use error group and pre alloc slots to collect parsed results
 	slots := make([]*AnnotatedDecls, 0)
-	eg := new(ErrGroup)
 
 	if err = filepath.Walk(path, func(filename string, info fs.FileInfo, e error) (err error) {
 		if e != nil {
 			return e
 		}
 
-		if name := info.Name(); info.IsDir() || strings.HasPrefix(name, ".") {
+		if name := info.Name(); info.IsDir() {
 			// some specific skip name or dirs starts with .
-			if _, skip := SkipDirs[name]; skip {
+			if _, skip := SkipDirs[name]; skip || strings.HasPrefix(name, ".") {
 				return filepath.SkipDir
 			}
 			return
@@ -199,17 +198,9 @@ func ParseFileOrDirectory(path string, prefix string) (decls AnnotatedDecls, err
 		// results would be placed in slot
 		index := len(slots)
 		slots = append(slots, new(AnnotatedDecls))
-		eg.Go(func() (err error) {
-			*slots[index], err = ParseFileDecls(filename, prefix)
-			return
-		})
+		*slots[index], err = ParseFileDecls(filename, prefix)
 		return
 	}); err != nil {
-		return
-	}
-
-	// wait for all results or error
-	if err = eg.Wait(); err != nil {
 		return
 	}
 

@@ -31,9 +31,11 @@ import (
 )
 
 var (
-	importNameCache = new(sync.Map)
-	importPathCache = new(sync.Map)
-	modFileCache    = new(sync.Map)
+	importNameCache        = new(sync.Map)
+	importPathCache        = new(sync.Map)
+	importPackageNameCache = new(sync.Map)
+	importPackageDirCache  = new(sync.Map)
+	modFileCache           = new(sync.Map)
 )
 
 // loadWithStore try loads key from sync.Map or execute provided fn to store valid results
@@ -44,6 +46,20 @@ func loadWithStore(key string, m *sync.Map, fn func() string) (r string) {
 		m.Store(key, r)
 	}
 	return
+}
+
+func GetPackageImportName(pkg, dir string) (output string) {
+	return loadWithStore(fmt.Sprintf("%s#%s", pkg, dir), importPackageNameCache, func() string {
+		ret, _ := ExecCommand(`go list -f "{{ .Name }}" `+strconv.Quote(pkg), dir)
+		return ret
+	})
+}
+
+func GetPackageImportDir(pkg, dir string) (output string) {
+	return loadWithStore(fmt.Sprintf("%s#%s", pkg, dir), importPackageDirCache, func() string {
+		ret, _ := ExecCommand(`go list -f "{{ .Dir }}" `+strconv.Quote(pkg), dir)
+		return ret
+	})
 }
 
 // ExecCommand execute command in provide directory and get stdout,stderr as string,error

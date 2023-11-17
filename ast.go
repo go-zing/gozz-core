@@ -20,7 +20,6 @@ package zcore
 import (
 	"go/ast"
 	"path/filepath"
-	"strconv"
 )
 
 // AssertFuncType to assert interface fields as function type and try return name
@@ -78,8 +77,8 @@ func LookupTypSpec(name, dir, pkgPath string) (expr ast.Expr, srcFile *File) {
 		return
 	}
 
-	pkgDir, err := ExecCommand(`go list -f "{{ .Dir }} " `+strconv.Quote(pkgPath), dir)
-	if err != nil {
+	pkgDir := GetPackageImportDir(pkgPath, dir)
+	if len(pkgDir) == 0 {
 		return
 	}
 

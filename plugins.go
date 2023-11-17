@@ -90,6 +90,7 @@ func (entity PluginEntity) run(filename string) (err error) {
 	if err != nil {
 		return
 	}
+	Logger.Printf("running plugin %s\n", entity.Name())
 	return entity.Plugin.Run(decls.Parse(entity, entity.Options))
 }
 

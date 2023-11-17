@@ -85,7 +85,7 @@ func RenderTemplate(plugin Plugin, templateText string, pkg string, editable boo
 	}
 
 	if data, err = format.Source(bf.Bytes()); err != nil {
-		fmt.Printf("%s\n", bf.Bytes())
+		Logger.Printf("%s\n", bf.Bytes())
 		return
 	}
 	return

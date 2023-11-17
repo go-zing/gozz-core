@@ -85,7 +85,11 @@ func (f *File) nodeReplacer(node ast.Node) bytesReplacer {
 
 // Imports dumps file ast imports list and return Imports map
 func (f *File) Imports() Imports {
-	return LoadImports(f.Ast, filepath.Dir(f.Path))
+	dir := filepath.Dir(f.Path)
+	if modDir := filepath.Dir(GetModFile(dir)); len(modDir) > 0 {
+		dir = modDir
+	}
+	return LoadImports(f.Ast, dir)
 }
 
 // ReplacePackages try replaces type package selector to provide node according to dst filename
@@ -177,7 +181,7 @@ func LoadImports(f *ast.File, dir string) (imps Imports) {
 		if len(name) == 0 {
 			if IsStandardImportPath(p) {
 				name = path.Base(p)
-			} else if name, _ = ExecCommand(`go list -f "{{ .Name }}" `+strconv.Quote(p), dir); len(name) == 0 {
+			} else if name = GetPackageImportName(p, dir); len(name) == 0 {
 				// no import name specified
 				// default import name from go list -f
 				// or use base path
@@ -247,12 +251,12 @@ func (set *ModifySet) Apply() (err error) {
 
 	sort.Strings(filenames)
 
+	group := ErrGroup{}
 	for _, filename := range filenames {
-		if err = set.set[filename].Apply(); err != nil {
-			return
-		}
+		filename := filename
+		group.Go(func() error { return set.set[filename].Apply() })
 	}
-	return
+	return group.Wait()
 }
 
 // Add try adds filename and alloc *Modify object into ModifySet
