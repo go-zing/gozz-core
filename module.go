@@ -19,8 +19,10 @@ package zcore
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"go/token"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -30,6 +32,8 @@ import (
 	"sync"
 )
 
+const cacheFileName = ".gozzcache"
+
 var (
 	importNameCache        = new(sync.Map)
 	importPathCache        = new(sync.Map)
@@ -38,7 +42,44 @@ var (
 	modFileCache           = new(sync.Map)
 
 	importPathMutex sync.Mutex
+
+	cacheKey = map[*sync.Map]string{
+		importNameCache:        "importName",
+		importPathCache:        "importPath",
+		importPackageNameCache: "importPackageName",
+		importPackageDirCache:  "importPackageDir",
+		modFileCache:           "modFile",
+	}
 )
+
+func InitCacheStore() {
+	cache, _ := ioutil.ReadFile(cacheFileName)
+	mm := make(map[string]map[string]string)
+	if json.Unmarshal(cache, &mm) == nil {
+		for store, key := range cacheKey {
+			if v, ok := mm[key]; ok {
+				for k, vv := range v {
+					store.Store(k, vv)
+				}
+			}
+		}
+	}
+}
+
+func FlushCacheStore() {
+	mm := make(map[string]map[string]string)
+	for store, key := range cacheKey {
+		mm[key] = make(map[string]string)
+		store.Range(func(k, v interface{}) bool {
+			kk, _ := k.(string)
+			vk, _ := v.(string)
+			mm[key][kk] = vk
+			return true
+		})
+	}
+	cache, _ := json.Marshal(mm)
+	_ = ioutil.WriteFile(cacheFileName, cache, 0644)
+}
 
 // loadWithStore try loads key from sync.Map or execute provided fn to store valid results
 func loadWithStore(key string, m *sync.Map, fn func() string) (r string) {
