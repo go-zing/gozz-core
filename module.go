@@ -36,6 +36,8 @@ var (
 	importPackageNameCache = new(sync.Map)
 	importPackageDirCache  = new(sync.Map)
 	modFileCache           = new(sync.Map)
+
+	importPathMutex sync.Mutex
 )
 
 // loadWithStore try loads key from sync.Map or execute provided fn to store valid results
@@ -113,6 +115,8 @@ func GetImportName(filename string) string {
 // GetImportName get filename or directory module import path
 // if file is not exist then return a relative calculated result from module environments
 func GetImportPath(filename string) string {
+	importPathMutex.Lock()
+	defer importPathMutex.Unlock()
 	return loadWithStore(filename, importPathCache, func() (p string) {
 		p, dir := executeWithDir(filename, `go list -f "{{.ImportPath}}"`)
 		if len(dir) == 0 || len(p) > 0 {
