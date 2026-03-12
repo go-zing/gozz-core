@@ -240,13 +240,14 @@ func (imps Imports) List() []Import {
 		if IsStandardImportPath(p) && path.Base(p) == name {
 			name = ""
 		}
+		sp := strings.Split(p, "\n")
 		list = append(list, Import{
 			Name: name,
-			Path: p,
+			Path: strings.TrimSpace(sp[len(sp)-1]),
 		})
 	}
 	sort.Slice(list, func(i, j int) bool {
-		return list[i].Path < list[j].Path
+		return list[i].Name+list[i].Path < list[j].Name+list[j].Path
 	})
 	return list
 }

@@ -77,7 +77,7 @@ func FlushCacheStore() {
 			return true
 		})
 	}
-	cache, _ := json.Marshal(mm)
+	cache, _ := json.MarshalIndent(mm, "", "  ")
 	_ = ioutil.WriteFile(cacheFileName, cache, 0644)
 }
 
