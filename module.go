@@ -190,22 +190,24 @@ func GetImportPath(filename string) string {
 	})
 }
 
+var modNameCache = new(sync.Map)
+
 func parseModuleNameWithModfile(modFile string) (string, error) {
+	if v, ok := modNameCache.Load(modFile); ok {
+		return v.(string), nil
+	}
 	data, err := os.ReadFile(modFile)
 	if err != nil {
 		return "", err
 	}
-
-	// 解析 go.mod 文件
 	f, err := modfile.Parse(modFile, data, nil)
 	if err != nil {
 		return "", err
 	}
-
 	if f.Module == nil {
 		return "", fmt.Errorf("no module statement found")
 	}
-
+	modNameCache.Store(modFile, f.Module.Mod.Path)
 	return f.Module.Mod.Path, nil
 }
 
