@@ -30,6 +30,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"golang.org/x/mod/modfile"
 )
 
 const cacheFileName = ".gozzcache"
@@ -174,21 +176,37 @@ func GetImportPath(filename string) string {
 		}
 
 		// get nearest module path
-		modDir := filepath.Dir(GetModFile(tmp))
-		modName, err := ExecCommand("go list -m", modDir)
+		modFile := GetModFile(tmp)
+		modName, err := parseModuleNameWithModfile(modFile)
 		if err != nil {
 			return
 		}
-		mods := strings.Split(strings.TrimSpace(modName), "\n")
-		modName = mods[len(mods)-1]
-
 		// computed module package import path
-		rel, err := filepath.Rel(modDir, dir)
+		rel, err := filepath.Rel(filepath.Dir(modFile), dir)
 		if err != nil {
 			return
 		}
 		return path.Join(modName, strings.Replace(rel, string(filepath.Separator), "/", -1))
 	})
+}
+
+func parseModuleNameWithModfile(modFile string) (string, error) {
+	data, err := os.ReadFile(modFile)
+	if err != nil {
+		return "", err
+	}
+
+	// 解析 go.mod 文件
+	f, err := modfile.Parse(modFile, data, nil)
+	if err != nil {
+		return "", err
+	}
+
+	if f.Module == nil {
+		return "", fmt.Errorf("no module statement found")
+	}
+
+	return f.Module.Mod.Path, nil
 }
 
 // executeInDir try executes command in provided directory or parent if filename is not directory
