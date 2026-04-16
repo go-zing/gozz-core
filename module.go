@@ -179,6 +179,8 @@ func GetImportPath(filename string) string {
 		if err != nil {
 			return
 		}
+		mods := strings.Split(strings.TrimSpace(modName), "\n")
+		modName = mods[len(mods)-1]
 
 		// computed module package import path
 		rel, err := filepath.Rel(modDir, dir)
